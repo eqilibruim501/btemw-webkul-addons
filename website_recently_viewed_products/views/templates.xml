@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="assets_frontend_stock" inherit_id="website.assets_frontend" name="Assets Frontend Stock">
+      <xpath expr="." position="inside">
+          <link rel='stylesheet' href='/website_recently_viewed_products/static/src/css/website_recently_viewed.css'/>
+          <script type="text/javascript" src="/website_recently_viewed_products/static/src/js/website_recently_viewed.js"></script>
+
+          <link rel='stylesheet' href='/website_recently_viewed_products/static/src/css/owl.carousel.css'/>
+          <link rel='stylesheet' href='/website_recently_viewed_products/static/src/css/owl.theme.css'/>
+          <script type="text/javascript" src="/website_recently_viewed_products/static/src/js/owl.carousel.min.js"></script>
+      </xpath>
+    </template>
+
+
+    <template id="website_recently_viewed_product_page" inherit_id="website_sale.product" active="True" customize_show="True" name="Show Recently Viewed">
+      <xpath expr="//t[@t-call='website.layout']" position="inside">
+        <span id="show-product" t-att-data-show-product="website.get_max_and_allow_product_qty(2)"/>
+        <t t-set="is_user_public" t-value="website.env.user == request.website.user_id"/>
+        <t t-set="view_products" t-value="sha_in or token or not is_user_public"/>
+        <div class="container  hidden-xs recent-view-container" style="margin-top:35px;" t-if="view_products and website.env.user.recently_viewed_products">
+          <div style="color: #8c8c8c; font-weight:700; font-size:19px; ">Recently Viewed Products</div>
+          <div id="owl-recentaly-viewed" class="owl-carousel wk_recently_view_container" style="display:none;">
+              <t t-call="website_recently_viewed_products.product_recently_viewed"/>
+          </div>
+        </div>
+      </xpath>
+    </template>
+
+    <template id="website_recently_viewed_products_page" inherit_id="website_sale.products" active="True" customize_show="True" name="Show Recently Viewed">
+      <xpath expr="//t[@t-call='website.layout']" position="inside">
+        <span id="show-product" t-att-data-show-product="website.get_max_and_allow_product_qty(2)"/>
+        <t t-set="is_user_public" t-value="website.env.user == request.website.user_id"/>
+        <t t-set="view_products" t-value="sha_in or token or not is_user_public"/>
+        <div class="container  hidden-xs recent-view-container" t-if="view_products and website.env.user.recently_viewed_products">
+          <div style="color: #8c8c8c; font-weight:700; font-size:19px;">Recently Viewed Products</div>
+          <div id="owl-recentaly-viewed" class="owl-carousel wk_recently_view_container" style="display:none;">
+              <t t-call="website_recently_viewed_products.product_recently_viewed"/>
+          </div>
+        </div>
+      </xpath>
+    </template>
+
+
+    <template id="product_recently_viewed" name="Show recently viewed products">
+      <t t-foreach="viewed_product" t-as="product">
+          <div class="item">
+            <form action="/shop/cart/update" method="post" class="oe_product_cart"
+            t-att-data-publish="product.website_published and 'on' or 'off'"
+            itemscope="itemscope" itemtype="http://schema.org/Product">
+            <!-- <div class="oe_product_image"> -->
+                <!-- <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                <div class="ribbon-wrapper">
+                    <a href="#" role="button" class="ribbon btn btn-danger">Sale</a>
+                </div> -->
+                <!-- <t t-set="product_href" t-value="keep(product.website_url, page=(pager['page']['num'] if pager['page']['num']&gt;1 else None))" /> -->
+                <a t-attf-href="/shop/product/#{ slug(product)}" class="d-block h-100" itemprop="url">
+                    <span t-field="product.image_1920"
+                        t-options="{'widget': 'image', 'preview_image': 'image_1024' if product_image_small else 'image_256'}"
+                        class="d-flex h-100 justify-content-center align-items-center"/>
+                </a>
+            <!-- </div> -->
+            <div class="p-0 text-center o_wsale_product_information">
+                <div class="p-2 o_wsale_product_information_text">
+                    <h6 class="o_wsale_products_item_title">
+                        <a itemprop="name" t-attf-href="/shop/product/#{ slug(product)}" t-att-content="product.name" t-field="product.name" />
+                        <a role="button" t-if="not product.website_published" t-attf-href="/shop/product/#{ slug(product)}" class="btn btn-sm btn-danger" title="This product is unpublished.">Unpublished</a>
+                    </h6>
+                    <t t-set="combination" t-value="product_template_attribute_value_ids"/>
+                    <t t-set="combination_info" t-value="product._get_combination_info(combination)"/>
+                    <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <del t-attf-class="text-danger mr-2 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                        <span t-if="combination_info['price']" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span itemprop="price" style="display:none;" t-esc="combination_info['price']" />
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />
+                    </div>
+                </div>
+
+                <input name="product_id" t-att-value="product.product_variant_id.id" type="hidden" />
+                <t t-if="len(product.product_variant_ids) == 1">
+                    <a class="btn btn-default btn-xs recent-add">
+                        <span class="fa fa-shopping-cart" />
+                    </a>
+                </t>
+                <t t-if="len(product.product_variant_ids) &gt; 1">
+                    <a class="btn btn-default btn-xs" t-attf-href="/shop/product/#{ slug(product)}">
+                        <span class="fa fa-shopping-cart" />
+                    </a>
+                </t>
+                <div class="o_wsale_product_btn"/>
+            </div>
+        </form>
+          </div>
+      </t>
+    </template>
+
+</odoo>
