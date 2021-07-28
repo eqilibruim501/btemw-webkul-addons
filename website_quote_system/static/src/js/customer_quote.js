@@ -110,11 +110,13 @@ $(document).ready(function() {
                 }
             });
             // SUBMIT QUOTE BUTTON
-            $('#quote_submit_button').on('click', function(event) {
+            $('#quote_submit_button, #sci_quote_submit_button').on('click', function(event) {
                 var $form = $(this).closest('form')
                 var product_id = parseInt($form.find('input[type="hidden"][name="product_id"]').first().val());
                 var new_quantity = parseFloat($form.find('input[name="new_quantity"]').val());
                 var new_price = parseFloat($form.find('input[name="new_price"]').val())
+                var customer_name = $form.find('input[name="customer_name"]').val()
+                var customer_email =  $form.find('input[name="customer_email"]').val()
                 // or parseFloat($form.find('input[type="hidden"][name="def_price"]').first().val());
                 var new_desc = document.getElementById("new_desc").value
 
@@ -155,9 +157,11 @@ $(document).ready(function() {
                     $('.quote_loader').show();
                     ajax.jsonRpc("/shop/customer_quote_submit", 'call',{
                         'product_id' :   product_id,
-                        'qty'        :   new_quantity,
-                        'price'      :   new_price,
-                        'description':   new_desc,
+                        'new_quantity' :   new_quantity,
+                        'new_price'      :   new_price,
+                        'new_desc':   new_desc,
+                        'customer_name':   customer_name,
+                        'customer_email':   customer_email,
                     })
                     .then(function (customer_quote_template_submit) {
                         $('.quote_loader').hide();
